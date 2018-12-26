@@ -3,10 +3,12 @@ import request from '@/utils/request'
 export function loginByUsername(username, password) {
   const data = {
     username,
-    password
+    password,
+    method: 'login'
   }
+  debugger
   return request({
-    url: '/login/login',
+    url: '/api/login',
     method: 'post',
     data
   })

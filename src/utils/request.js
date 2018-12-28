@@ -6,8 +6,12 @@ import { getToken } from '@/utils/auth'
 // create an axios instance
 const service = axios.create({
   baseURL: process.env.BASE_API, // api 的 base_url
-  timeout: 5000 // request timeout
+  timeout: 5000, // request timeout
+  withCredentials: true,
+  crossDomain: true
 })
+// 转码工具
+var qs = require('qs')
 
 // request interceptor
 service.interceptors.request.use(
@@ -16,8 +20,11 @@ service.interceptors.request.use(
     if (store.getters.token) {
       // 让每个请求携带token-- ['X-Token']为自定义key 请根据实际情况自行修改
       config.headers['X-Token'] = getToken()
+    }
+    // POST请求表单形式发送
+    if (config.method === 'post' && config.data) {
+      config.data = qs.stringify(config.data, { arrayFormat: 'repeat' })
       config.headers['Content-Type'] = 'application/x-www-form-urlencoded'
-      config.headers['Accept'] = 'application/json'
     }
     return config
   },

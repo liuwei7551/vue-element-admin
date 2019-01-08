@@ -6,7 +6,6 @@ export function loginByUsername(username, password) {
     password,
     method: 'login'
   }
-  debugger
   return request({
     url: '/api/login',
     method: 'post',

@@ -1,5 +1,6 @@
 import { loginByUsername, logout, getUserInfo } from '@/api/login'
 import { getToken, setToken, removeToken } from '@/utils/auth'
+import { removeAccessTokenExp, removeRefreshTokenExp } from '@/utils/token'
 // import axios from 'axios'
 
 const user = {
@@ -50,10 +51,9 @@ const user = {
       const username = userInfo.username.trim()
       return new Promise((resolve, reject) => {
         loginByUsername(username, userInfo.password).then(response => {
-          debugger
-          const data = response.data
-          commit('SET_TOKEN', data.token)
-          setToken(response.data.token)
+          // const data = response.data
+          // commit('SET_TOKEN', data.token)
+          // setToken(response.data.token)
           resolve()
         }).catch(error => {
           reject(error)
@@ -64,19 +64,19 @@ const user = {
     // 获取用户信息
     GetUserInfo({ commit, state }) {
       return new Promise((resolve, reject) => {
-        getUserInfo(state.token).then(response => {
-          if (!response.data) { // 由于mockjs 不支持自定义状态码只能这样hack
-            reject('error')
+        getUserInfo().then(response => {
+          if (response.data.code === 80004004) { // 由于mockjs 不支持自定义状态码只能这样hack
+            reject(response.data.message)
           }
           const data = response.data
-
-          if (data.roles && data.roles.length > 0) { // 验证返回的roles是否是一个非空数组
-            commit('SET_ROLES', data.roles)
+          const roles = data.roleCodes.split(',')
+          if (roles && roles.length > 0) { // 验证返回的roles是否是一个非空数组
+            commit('SET_ROLES', roles)
           } else {
             reject('getInfo: roles must be a non-null array !')
           }
 
-          commit('SET_NAME', data.name)
+          commit('SET_NAME', data.username)
           commit('SET_AVATAR', data.avatar)
           commit('SET_INTRODUCTION', data.introduction)
           resolve(response)
@@ -117,8 +117,8 @@ const user = {
     // 前端 登出
     FedLogOut({ commit }) {
       return new Promise(resolve => {
-        commit('SET_TOKEN', '')
-        removeToken()
+        removeAccessTokenExp()
+        removeRefreshTokenExp()
         resolve()
       })
     },

@@ -5,7 +5,7 @@ import { removeAccessTokenExp, removeRefreshTokenExp } from '@/utils/token'
 
 const user = {
   state: {
-    user: '',
+    userId: '',
     status: '',
     code: '',
     token: getToken(),
@@ -42,6 +42,9 @@ const user = {
     },
     SET_ROLES: (state, roles) => {
       state.roles = roles
+    },
+    SET_USERID: (state, userId) => {
+      state.userId = userId
     }
   },
 
@@ -65,10 +68,7 @@ const user = {
     GetUserInfo({ commit, state }) {
       return new Promise((resolve, reject) => {
         getUserInfo().then(response => {
-          if (response.data.code === 80004004) { // 由于mockjs 不支持自定义状态码只能这样hack
-            reject(response.data.message)
-          }
-          const data = response.data
+          const data = response
           const roles = data.roleCodes.split(',')
           if (roles && roles.length > 0) { // 验证返回的roles是否是一个非空数组
             commit('SET_ROLES', roles)
@@ -76,6 +76,7 @@ const user = {
             reject('getInfo: roles must be a non-null array !')
           }
 
+          commit('SET_USERID', data.userId)
           commit('SET_NAME', data.username)
           commit('SET_AVATAR', data.avatar)
           commit('SET_INTRODUCTION', data.introduction)
